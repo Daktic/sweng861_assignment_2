@@ -1,4 +1,4 @@
-package edu.psgv.sweng861;
+package edu.psgv.sweng861.main;
 
 import java.util.Scanner;
 
