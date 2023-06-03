@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class UnitsConvertorTest {
@@ -15,6 +21,51 @@ class UnitsConvertorTest {
 
     @AfterEach
     void tearDown() throws Exception {
+    }
+
+    private String normalizeExpectedOutput(String expectedOutput) {
+        // Replace any platform-specific line separators with a consistent line separator
+        expectedOutput = expectedOutput.replaceAll("\\r\\n|\\r|\\n", System.lineSeparator());
+
+        // Remove leading/trailing whitespaces from each line
+        String[] lines = expectedOutput.split("\\r?\\n");
+        for (int i = 0; i < lines.length; i++) {
+            lines[i] = lines[i].trim();
+        }
+
+        // Reconstruct the normalized output
+        return String.join(System.lineSeparator(), lines);
+    }
+
+    @Test
+    void main_ValidInput_Metric() {
+        // Arrange
+        String input = "10 cm\n";
+        String expectedOutput = "Please Enter the input value followed by the unit:\n" +
+                "10 cm is:\n" +
+                "3.9e+03 mil\n" +
+                "3.9 inch\n" +
+                "0.33 ft\n" +
+                "0.11 yard\n" +
+                "6.2e-05 mile\n"
+        ;
+
+        InputStream sysInBackup = System.in;
+        PrintStream sysOutBackup = System.out;
+        try {
+            System.setIn(new ByteArrayInputStream(input.getBytes()));
+            ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(outContent));
+
+            // Act
+            UnitsConvertor.main(null);
+
+            // Assert
+            assertEquals(expectedOutput, outContent.toString());
+        } finally {
+            System.setIn(sysInBackup);
+            System.setOut(sysOutBackup);
+        }
     }
 
     //Tests if 1 meter unit is converted to mil
@@ -29,6 +80,7 @@ class UnitsConvertorTest {
         1.1 yard
         0.00062 mile
          */
+        //TODO convert all outputs to normalized expected outputs
         assertEquals(39.3701, UnitsConvertor.toMil(numberInput ,"mm"));
         assertEquals(39.3701, UnitsConvertor.toMil(numberInput ,"millimeter"));
         assertEquals(393.701, UnitsConvertor.toMil(numberInput ,"cm"));
@@ -61,8 +113,12 @@ class UnitsConvertorTest {
     }
 
     @Test
-    void invalidInputNumber() {
-        int invalidNumber = -1;
-        assertNotEquals(24,UnitsConvertor.toMm(invalidNumber ,"mil"));
+    void invalidInput() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            UnitsConvertor.toMm(1, "test");
+        }, "Illegal unit value.");
+        assertThrows(IllegalArgumentException.class, () -> {
+            UnitsConvertor.toMil(1, "test");
+        }, "Illegal unit value.");
     }
 }
