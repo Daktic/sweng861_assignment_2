@@ -23,6 +23,7 @@ class UnitsConvertorTest {
     void tearDown() throws Exception {
     }
 
+    // This method is used to normalize the string output.
     private String normalizeExpectedOutput(String expectedOutput) {
         // Replace any platform-specific line separators with a consistent line separator
         expectedOutput = expectedOutput.replaceAll("\\r\\n|\\r|\\n", System.lineSeparator());
@@ -37,9 +38,9 @@ class UnitsConvertorTest {
         return String.join(System.lineSeparator(), lines);
     }
 
+    // Testing Metric converts to Imperial
     @Test
     void main_ValidInput_Metric() {
-        // Testing Metric converts to Imperial
 
         String inputMetric = "10 cm\n";
         String expectedOutputMetric = """
@@ -64,6 +65,9 @@ class UnitsConvertorTest {
 
             UnitsConvertor.main(null);
 
+            // Assert that outContent is an instance of ByteArrayOutputStream
+            assertTrue(outContent instanceof ByteArrayOutputStream);
+
             assertEquals(normalizedExpectedOutputMetric, outContent.toString());
         } finally {
             System.setIn(sysInBackup);
@@ -83,7 +87,8 @@ class UnitsConvertorTest {
                 ;
 
         String normalizedExpectedOutput = normalizeExpectedOutput(expectedOutputImperial);
-        
+
+
         try {
             System.setIn(new ByteArrayInputStream(inputImperial.getBytes()));
             ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -125,6 +130,7 @@ class UnitsConvertorTest {
             System.setOut(sysOutBackup);
         }
 
+        // explicitly tests the lack of input
         String noInput = "\n";
         String expectedOutputNoInput = """
                 Please Enter the input value followed by the unit:
@@ -155,7 +161,7 @@ class UnitsConvertorTest {
         assertThrows(IllegalArgumentException.class, () -> UnitsConvertor.toMil(1, "test"), "Illegal unit value.");
     }
 
-    //Tests if 1 meter unit is converted to mil
+    //Tests if 1 unit is converted to mil
     @Test
     void toMil() {
         int numberInput = 1;
